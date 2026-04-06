@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+instance/
+*.db
+.pythonlibs/
+.env
+delay_model.pkl
