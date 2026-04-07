@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon stat-blue">✈</div>
+        <div class="stat-body">
+            <div class="stat-value">{{ total_flights }}</div>
+            <div class="stat-label">Total Flights</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-cyan">◈</div>
+        <div class="stat-body">
+            <div class="stat-value">{{ total_tickets }}</div>
+            <div class="stat-label">Confirmed Bookings</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-green">$</div>
+        <div class="stat-body">
+            <div class="stat-value">${{ "{:,.2f}".format(total_revenue) }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-orange">⚠</div>
+        <div class="stat-body">
+            <div class="stat-value">{{ avg_delay }} min</div>
+            <div class="stat-label">Avg. Delay</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-purple">◎</div>
+        <div class="stat-body">
+            <div class="stat-value">{{ total_passengers }}</div>
+            <div class="stat-label">Passengers</div>
+        </div>
+    </div>
+</div>
+
+<div class="dash-row">
+    <div class="dash-panel">
+        <div class="panel-header">
+            <h3>Flight Status Overview</h3>
+        </div>
+        <div class="status-bars">
+            <div class="status-bar-item">
+                <span class="status-dot status-ontime"></span>
+                <span class="status-name">On Time</span>
+                <span class="status-count">{{ ontime_count }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill bar-ontime" style="width: {{ (ontime_count / [total_flights,1]|max * 100)|round(0) }}%"></div>
+                </div>
+            </div>
+            <div class="status-bar-item">
+                <span class="status-dot status-delayed"></span>
+                <span class="status-name">Delayed</span>
+                <span class="status-count">{{ delayed_count }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill bar-delayed" style="width: {{ (delayed_count / [total_flights,1]|max * 100)|round(0) }}%"></div>
+                </div>
+            </div>
+            <div class="status-bar-item">
+                <span class="status-dot status-cancelled"></span>
+                <span class="status-name">Cancelled</span>
+                <span class="status-count">{{ cancelled_count }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill bar-cancelled" style="width: {{ (cancelled_count / [total_flights,1]|max * 100)|round(0) }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-panel">
+        <div class="panel-header">
+            <h3>Recent Tickets</h3>
+            <a href="{{ url_for('my_bookings') }}" class="btn btn-sm btn-outline">View All</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Flight</th>
+                    <th>Class</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in recent_tickets %}
+                <tr>
+                    <td>#{{ t.ticket_id }}</td>
+                    <td>{{ t.flight.flight_number if t.flight else 'N/A' }}</td>
+                    <td>{{ t.ticket_class }}</td>
+                    <td>${{ "%.2f"|format(t.price) }}</td>
+                    <td><span class="badge badge-{{ 'success' if t.status == 'Confirmed' else 'danger' }}">{{ t.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-muted">No tickets found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="dash-panel full-width">
+    <div class="panel-header">
+        <h3>Recent Flights</h3>
+        <a href="{{ url_for('flights') }}" class="btn btn-sm btn-outline">Manage Flights</a>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Flight #</th>
+                <th>Airline</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Departure</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in recent_flights %}
+            <tr>
+                <td><strong>{{ f.flight_number }}</strong></td>
+                <td>{{ f.airline.airline_name if f.airline else 'N/A' }}</td>
+                <td>{{ f.origin.airport_code if f.origin else 'N/A' }}</td>
+                <td>{{ f.destination.airport_code if f.destination else 'N/A' }}</td>
+                <td>{{ f.scheduled_departure }}</td>
+                <td>
+                    <span class="badge badge-{{ 'success' if f.status == 'On Time' else ('warning' if f.status == 'Delayed' else 'danger') }}">
+                        {{ f.status }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">No flights found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
