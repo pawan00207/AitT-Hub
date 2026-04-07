@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Delay Prediction{% endblock %}
+{% block page_title %}ML Delay Prediction{% endblock %}
+{% block content %}
+
+<div class="predict-layout">
+    <div class="section-card">
+        <div class="panel-header">
+            <h3>Flight Delay Predictor</h3>
+            <span class="badge badge-info">Random Forest · Kaggle 2015 Schema</span>
+        </div>
+        <p class="section-desc">
+            Enter flight details to predict the likelihood and estimated duration of a delay using our
+            Random Forest model trained on data matching the
+            <strong>Kaggle 2015 US Flight Delays dataset</strong> schema (5.8M records).
+        </p>
+
+        <form method="POST" class="predict-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Airline (IATA Code)</label>
+                    <select name="airline_code" class="form-control" required>
+                        {% for code in airline_codes %}
+                        <option value="{{ code }}" {% if result and result.airline == code %}selected{% endif %}>{{ code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Origin Airport</label>
+                    <select name="origin_code" class="form-control" required>
+                        {% for code in airport_codes %}
+                        <option value="{{ code }}" {% if result and result.origin == code %}selected{% endif %}>{{ code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Destination Airport</label>
+                    <select name="dest_code" class="form-control" required>
+                        {% for code in airport_codes %}
+                        <option value="{{ code }}" {% if result and result.dest == code %}selected{% endif %}>{{ code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Month</label>
+                    <select name="month" class="form-control">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7" selected>July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Day of Week</label>
+                    <select name="day_of_week" class="form-control">
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5" selected>Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Departure Time (HHMM)</label>
+                    <input type="number" name="departure_hhmm" class="form-control"
+                           min="0" max="2359" value="1800"
+                           placeholder="e.g. 800=8am, 1430=2:30pm" required>
+                    <small class="form-hint">Format: 800=8:00am · 1430=2:30pm · 1800=6:00pm</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Distance (miles)</label>
+                    <input type="number" name="distance" class="form-control"
+                           min="50" max="5000"
+                           value="{{ result.distance if result else 2475 }}" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-predict" id="predictBtn">
+                Predict Delay
+            </button>
+        </form>
+    </div>
+
+    {% if result %}
+    <div class="prediction-result {% if result.likely_delayed %}result-delayed{% else %}result-ontime{% endif %}" id="predictionCard">
+        <div class="result-icon">
+            {% if result.likely_delayed %}⚠{% else %}✓{% endif %}
+        </div>
+        <div class="result-headline">
+            {% if result.likely_delayed %}Delay Likely{% else %}On Time Expected{% endif %}
+        </div>
+        <div class="result-grid">
+            <div class="result-metric">
+                <div class="metric-value">{{ result.predicted_delay_minutes }} min</div>
+                <div class="metric-label">Predicted Delay</div>
+            </div>
+            <div class="result-metric">
+                <div class="metric-value">{{ result.delay_probability }}%</div>
+                <div class="metric-label">Delay Probability</div>
+            </div>
+        </div>
+        <div class="prob-bar-container">
+            <div class="prob-bar-track">
+                <div class="prob-bar-fill {% if result.likely_delayed %}fill-red{% else %}fill-green{% endif %}"
+                     data-width="{{ result.delay_probability }}"></div>
+            </div>
+            <div class="prob-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+        </div>
+        <div class="result-note">
+            Route: <strong>{{ result.airline }}</strong> · {{ result.origin }} → {{ result.dest }} · {{ result.distance }} mi
+        </div>
+        <div class="model-info">
+            Model: Random Forest (200 estimators, max_depth=10) · Kaggle 2015 Flight Delays Schema
+            · Features: MONTH, DAY_OF_WEEK, AIRLINE, ORIGIN_AIRPORT, DEST_AIRPORT, SCHEDULED_DEPARTURE, DISTANCE
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="section-card ml-info-card">
+    <h3>About the ML Model — Kaggle 2015 Flight Delays</h3>
+    <div class="ml-info-grid">
+        <div class="ml-info-item">
+            <div class="ml-info-label">Algorithm</div>
+            <div class="ml-info-value">Random Forest Classifier + Regressor (200 trees, depth=10)</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Dataset Schema</div>
+            <div class="ml-info-value">Kaggle 2015 US Flight Delays (5,819,079 real records)</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Airlines Covered</div>
+            <div class="ml-info-value">15 US airlines: AA, AS, B6, DL, EV, F9, HA, MQ, NK, OO, UA, US, VX, WN, FL</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Airports Covered</div>
+            <div class="ml-info-value">30 busiest US airports: ATL, LAX, ORD, DFW, JFK, EWR, LGA, SFO…</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Feature Columns</div>
+            <div class="ml-info-value">MONTH, DAY_OF_WEEK, AIRLINE, ORIGIN_AIRPORT, DEST_AIRPORT, SCHEDULED_DEPARTURE, DISTANCE</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Target (Kaggle)</div>
+            <div class="ml-info-value">DEPARTURE_DELAY &gt; 15 min → IS_DELAYED (binary) + delay minutes (regression)</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Real-World Insights</div>
+            <div class="ml-info-value">EWR/LGA/JFK worst congestion · Fri/Mon highest delays · Jun/Jul/Dec worst months</div>
+        </div>
+        <div class="ml-info-item">
+            <div class="ml-info-label">Library</div>
+            <div class="ml-info-value">scikit-learn + pandas + numpy</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
