@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+{% block page_title %}{% if current_user.role == 'admin' %}All Bookings{% else %}My Bookings{% endif %}{% endblock %}
+{% block content %}
+
+<div class="section-card">
+    <div class="panel-header">
+        <h3>Tickets <span class="count-badge">{{ tickets|length }}</span></h3>
+        <a href="{{ url_for('search_flights') }}" class="btn btn-sm btn-primary">+ Book a Flight</a>
+    </div>
+    {% if tickets %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Passenger</th>
+                    <th>Flight</th>
+                    <th>Route</th>
+                    <th>Class</th>
+                    <th>Seat</th>
+                    <th>Price</th>
+                    <th>Booked</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tickets %}
+                <tr>
+                    <td>#{{ t.ticket_id }}</td>
+                    <td>{{ t.passenger.full_name if t.passenger else '—' }}</td>
+                    <td><strong>{{ t.flight.flight_number if t.flight else '—' }}</strong></td>
+                    <td>
+                        {% if t.flight %}
+                        {{ t.flight.origin.airport_code if t.flight.origin else '?' }}
+                        →
+                        {{ t.flight.destination.airport_code if t.flight.destination else '?' }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>{{ t.ticket_class }}</td>
+                    <td>{{ t.seat_number }}</td>
+                    <td>${{ "%.2f"|format(t.price) }}</td>
+                    <td>{{ t.booking_date }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if t.status == 'Confirmed' else 'danger' }}">{{ t.status }}</span>
+                    </td>
+                    <td>
+                        {% if t.status == 'Confirmed' %}
+                        <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=t.ticket_id) }}" style="display:inline" onsubmit="return confirm('Cancel ticket #{{ t.ticket_id }}?')">
+                            <button type="submit" class="btn btn-xs btn-danger">Cancel</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <p>No bookings found. <a href="{{ url_for('search_flights') }}">Search for flights</a> to book a ticket.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
