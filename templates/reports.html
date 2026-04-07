@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}SQL Reports{% endblock %}
+{% block page_title %}SQL Reports & Analytics{% endblock %}
+{% block content %}
+
+<div class="reports-intro">
+    <p>Raw SQL queries executed against the SQLite database using <code>db.session.execute()</code> for DBMS demonstration.</p>
+</div>
+
+<div class="report-section">
+    <div class="report-header">
+        <h3>Top 5 Most Delayed Airlines</h3>
+        <button class="btn btn-xs btn-outline toggle-sql" onclick="toggleSQL('sql1')">Show SQL</button>
+    </div>
+    <div id="sql1" class="sql-block hidden"><pre>{{ top_delayed_sql }}</pre></div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead><tr><th>Airline</th><th>Code</th><th>Avg Delay (min)</th><th>Total Delays</th></tr></thead>
+            <tbody>
+                {% for row in top_delayed %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td><span class="airline-code">{{ row[1] }}</span></td>
+                    <td>
+                        <span class="delay-badge {% if row[2] > 60 %}delay-severe{% elif row[2] > 30 %}delay-moderate{% else %}delay-minor{% endif %}">
+                            {{ "%.1f"|format(row[2]) }} min
+                        </span>
+                    </td>
+                    <td>{{ row[3] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-muted">No data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="report-header">
+        <h3>Busiest Routes (by Tickets Sold)</h3>
+        <button class="btn btn-xs btn-outline toggle-sql" onclick="toggleSQL('sql2')">Show SQL</button>
+    </div>
+    <div id="sql2" class="sql-block hidden"><pre>{{ busiest_routes_sql }}</pre></div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead><tr><th>Origin</th><th>Destination</th><th>Tickets Sold</th></tr></thead>
+            <tbody>
+                {% for row in busiest_routes %}
+                <tr>
+                    <td><strong>{{ row[0] }}</strong> — {{ row[2] }}</td>
+                    <td><strong>{{ row[1] }}</strong> — {{ row[3] }}</td>
+                    <td><span class="count-badge">{{ row[4] }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-muted">No data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="report-header">
+        <h3>Revenue per Airline</h3>
+        <button class="btn btn-xs btn-outline toggle-sql" onclick="toggleSQL('sql3')">Show SQL</button>
+    </div>
+    <div id="sql3" class="sql-block hidden"><pre>{{ revenue_sql }}</pre></div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead><tr><th>Airline</th><th>Code</th><th>Tickets Sold</th><th>Total Revenue</th></tr></thead>
+            <tbody>
+                {% for row in revenue_data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td><span class="airline-code">{{ row[1] }}</span></td>
+                    <td>{{ row[3] }}</td>
+                    <td class="revenue-cell">${{ "{:,.2f}".format(row[2]) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-muted">No revenue data.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="report-header">
+        <h3>Monthly Booking Trends</h3>
+        <button class="btn btn-xs btn-outline toggle-sql" onclick="toggleSQL('sql4')">Show SQL</button>
+    </div>
+    <div id="sql4" class="sql-block hidden"><pre>{{ monthly_sql }}</pre></div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead><tr><th>Month</th><th>Bookings</th><th>Revenue</th></tr></thead>
+            <tbody>
+                {% for row in monthly_data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td><span class="count-badge">{{ row[1] }}</span></td>
+                    <td class="revenue-cell">${{ "{:,.2f}".format(row[2]) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-muted">No booking data.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="report-header">
+        <h3>Flights with Delay &gt; 60 Minutes</h3>
+        <button class="btn btn-xs btn-outline toggle-sql" onclick="toggleSQL('sql5')">Show SQL</button>
+    </div>
+    <div id="sql5" class="sql-block hidden"><pre>{{ long_delays_sql }}</pre></div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead><tr><th>Flight #</th><th>Airline</th><th>Origin</th><th>Destination</th><th>Delay (min)</th><th>Reason</th></tr></thead>
+            <tbody>
+                {% for row in long_delays %}
+                <tr>
+                    <td><strong>{{ row[0] }}</strong></td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td><span class="delay-badge delay-severe">{{ row[4] }} min</span></td>
+                    <td>{{ row[5] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-muted">No flights with delay &gt; 60 min.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
