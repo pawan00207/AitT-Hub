@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AirTrack{% endblock %} — Airline Reservation & Delay Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">✈</span>
+            <span class="brand-text">AirTrack</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-label">Main</span>
+                <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">⊞</span> Dashboard
+                </a>
+                <a href="{{ url_for('flights') }}" class="nav-item {% if request.endpoint in ['flights','edit_flight'] %}active{% endif %}">
+                    <span class="nav-icon">✈</span> Flights
+                </a>
+                <a href="{{ url_for('search_flights') }}" class="nav-item {% if request.endpoint == 'search_flights' %}active{% endif %}">
+                    <span class="nav-icon">⌕</span> Search & Book
+                </a>
+                <a href="{{ url_for('my_bookings') }}" class="nav-item {% if request.endpoint == 'my_bookings' %}active{% endif %}">
+                    <span class="nav-icon">◈</span> Bookings
+                </a>
+            </div>
+            <div class="nav-section">
+                <span class="nav-label">Analytics</span>
+                <a href="{{ url_for('predict_delay') }}" class="nav-item {% if request.endpoint == 'predict_delay' %}active{% endif %}">
+                    <span class="nav-icon">◉</span> Delay Prediction
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item {% if request.endpoint == 'reports' %}active{% endif %}">
+                    <span class="nav-icon">▦</span> SQL Reports
+                </a>
+            </div>
+            {% if current_user.role == 'admin' %}
+            <div class="nav-section">
+                <span class="nav-label">Admin</span>
+                <a href="{{ url_for('passengers') }}" class="nav-item {% if request.endpoint == 'passengers' %}active{% endif %}">
+                    <span class="nav-icon">◎</span> Passengers
+                </a>
+                <a href="{{ url_for('delays') }}" class="nav-item {% if request.endpoint == 'delays' %}active{% endif %}">
+                    <span class="nav-icon">⚠</span> Delay Records
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+        <div class="sidebar-user">
+            <div class="user-info">
+                <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+                <div>
+                    <div class="user-name">{{ current_user.username }}</div>
+                    <div class="user-role">{{ current_user.role.title() }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">{% block page_title %}{% endblock %}</div>
+            <div class="top-bar-right">
+                <span class="role-badge role-{{ current_user.role }}">{{ current_user.role.title() }}</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
