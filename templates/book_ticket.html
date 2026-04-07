@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Book Ticket{% endblock %}
+{% block page_title %}Book Ticket — {{ flight.flight_number }}{% endblock %}
+{% block content %}
+
+<div class="section-card max-700">
+    <div class="flight-info-box">
+        <div class="flight-route">
+            <div class="route-airport">
+                <div class="airport-code">{{ flight.origin.airport_code if flight.origin else '—' }}</div>
+                <div class="airport-city">{{ flight.origin.city if flight.origin else '' }}</div>
+            </div>
+            <div class="route-arrow">
+                <div class="route-line"></div>
+                <span>✈</span>
+            </div>
+            <div class="route-airport">
+                <div class="airport-code">{{ flight.destination.airport_code if flight.destination else '—' }}</div>
+                <div class="airport-city">{{ flight.destination.city if flight.destination else '' }}</div>
+            </div>
+        </div>
+        <div class="flight-meta">
+            <span><strong>{{ flight.flight_number }}</strong></span>
+            <span>{{ flight.airline.airline_name if flight.airline else '' }}</span>
+            <span>Dep: {{ flight.scheduled_departure }}</span>
+            <span class="badge badge-{{ 'success' if flight.status == 'On Time' else 'warning' }}">{{ flight.status }}</span>
+        </div>
+    </div>
+
+    <form method="POST" class="grid-form">
+        <h3 class="form-section-title">Passenger Information</h3>
+        <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control" placeholder="Full legal name" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-control" placeholder="Phone number">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Passport Number</label>
+            <input type="text" name="passport_number" class="form-control" placeholder="Passport number">
+        </div>
+
+        <h3 class="form-section-title">Ticket Details</h3>
+        <div class="form-group">
+            <label class="form-label">Ticket Class</label>
+            <select name="ticket_class" class="form-control" id="ticket-class" onchange="updatePrice(this.value)">
+                <option value="Economy">Economy — $199.99</option>
+                <option value="Business">Business — $599.99</option>
+                <option value="First">First Class — $1,199.99</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Preferred Seat</label>
+            <input type="text" name="seat_number" class="form-control" placeholder="e.g. 12A (optional)">
+        </div>
+
+        <div class="price-preview">
+            <span>Estimated Price: </span>
+            <span id="price-display" class="price-value">$199.99</span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">Confirm Booking</button>
+            <a href="{{ url_for('search_flights') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
