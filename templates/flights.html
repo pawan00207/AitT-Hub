@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Flights{% endblock %}
+{% block page_title %}Flight Management{% endblock %}
+{% block content %}
+
+{% if current_user.role == 'admin' %}
+<div class="section-card">
+    <div class="panel-header">
+        <h3>Add New Flight</h3>
+        <button class="btn btn-sm btn-outline" onclick="toggleForm('add-flight-form')">+ Add Flight</button>
+    </div>
+    <form id="add-flight-form" method="POST" action="{{ url_for('add_flight') }}" class="hidden grid-form">
+        <div class="form-group">
+            <label class="form-label">Flight Number</label>
+            <input type="text" name="flight_number" class="form-control" placeholder="e.g. AA1234" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Airline</label>
+            <select name="airline_id" class="form-control" required>
+                <option value="">Select Airline</option>
+                {% for a in airlines %}
+                <option value="{{ a.airline_id }}">{{ a.airline_name }} ({{ a.airline_code }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Origin Airport</label>
+            <select name="origin_airport" class="form-control" required>
+                <option value="">Select Origin</option>
+                {% for ap in airports %}
+                <option value="{{ ap.airport_id }}">{{ ap.airport_code }} — {{ ap.city }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Destination Airport</label>
+            <select name="dest_airport" class="form-control" required>
+                <option value="">Select Destination</option>
+                {% for ap in airports %}
+                <option value="{{ ap.airport_id }}">{{ ap.airport_code }} — {{ ap.city }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Scheduled Departure</label>
+            <input type="datetime-local" name="scheduled_departure" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Scheduled Arrival</label>
+            <input type="datetime-local" name="scheduled_arrival" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control">
+                <option value="On Time">On Time</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Flight</button>
+            <button type="button" class="btn btn-outline" onclick="toggleForm('add-flight-form')">Cancel</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<div class="section-card">
+    <div class="panel-header">
+        <h3>All Flights <span class="count-badge">{{ flights|length }}</span></h3>
+        <input type="text" id="flightSearch" class="search-input" placeholder="Search flights...">
+    </div>
+    <div class="table-wrapper">
+        <table class="table" id="flightsTable">
+            <thead>
+                <tr>
+                    <th>Flight #</th>
+                    <th>Airline</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Status</th>
+                    {% if current_user.role == 'admin' %}<th>Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in flights %}
+                <tr>
+                    <td><strong>{{ f.flight_number }}</strong></td>
+                    <td>{{ f.airline.airline_name if f.airline else '—' }}</td>
+                    <td>{{ f.origin.airport_code if f.origin else '—' }} — {{ f.origin.city if f.origin else '' }}</td>
+                    <td>{{ f.destination.airport_code if f.destination else '—' }} — {{ f.destination.city if f.destination else '' }}</td>
+                    <td>{{ f.scheduled_departure }}</td>
+                    <td>{{ f.scheduled_arrival }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if f.status == 'On Time' else ('warning' if f.status == 'Delayed' else 'danger') }}">
+                            {{ f.status }}
+                        </span>
+                    </td>
+                    {% if current_user.role == 'admin' %}
+                    <td class="actions-cell">
+                        <a href="{{ url_for('edit_flight', flight_id=f.flight_id) }}" class="btn btn-xs btn-outline">Edit</a>
+                        <form method="POST" action="{{ url_for('delete_flight', flight_id=f.flight_id) }}" style="display:inline" onsubmit="return confirm('Delete flight {{ f.flight_number }}?')">
+                            <button type="submit" class="btn btn-xs btn-danger">Delete</button>
+                        </form>
+                        <a href="{{ url_for('book_ticket', flight_id=f.flight_id) }}" class="btn btn-xs btn-primary">Book</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-muted">No flights in database.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
