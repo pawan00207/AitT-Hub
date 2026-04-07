@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Edit Flight{% endblock %}
+{% block page_title %}Edit Flight — {{ flight.flight_number }}{% endblock %}
+{% block content %}
+<div class="section-card max-600">
+    <form method="POST" class="grid-form">
+        <div class="form-group">
+            <label class="form-label">Flight Number</label>
+            <input type="text" name="flight_number" class="form-control" value="{{ flight.flight_number }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Airline</label>
+            <select name="airline_id" class="form-control" required>
+                {% for a in airlines %}
+                <option value="{{ a.airline_id }}" {% if a.airline_id == flight.airline_id %}selected{% endif %}>
+                    {{ a.airline_name }} ({{ a.airline_code }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Origin Airport</label>
+            <select name="origin_airport" class="form-control" required>
+                {% for ap in airports %}
+                <option value="{{ ap.airport_id }}" {% if ap.airport_id == flight.origin_airport %}selected{% endif %}>
+                    {{ ap.airport_code }} — {{ ap.city }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Destination Airport</label>
+            <select name="dest_airport" class="form-control" required>
+                {% for ap in airports %}
+                <option value="{{ ap.airport_id }}" {% if ap.airport_id == flight.dest_airport %}selected{% endif %}>
+                    {{ ap.airport_code }} — {{ ap.city }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Scheduled Departure</label>
+            <input type="text" name="scheduled_departure" class="form-control" value="{{ flight.scheduled_departure }}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Scheduled Arrival</label>
+            <input type="text" name="scheduled_arrival" class="form-control" value="{{ flight.scheduled_arrival }}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control">
+                <option value="On Time" {% if flight.status == 'On Time' %}selected{% endif %}>On Time</option>
+                <option value="Delayed" {% if flight.status == 'Delayed' %}selected{% endif %}>Delayed</option>
+                <option value="Cancelled" {% if flight.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Flight</button>
+            <a href="{{ url_for('flights') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
