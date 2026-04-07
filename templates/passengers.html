@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Passengers{% endblock %}
+{% block page_title %}Passenger Records{% endblock %}
+{% block content %}
+
+<div class="section-card">
+    <div class="panel-header">
+        <h3>All Passengers <span class="count-badge">{{ passengers|length }}</span></h3>
+        <input type="text" id="passengerSearch" class="search-input" placeholder="Search passengers...">
+    </div>
+    <div class="table-wrapper">
+        <table class="table" id="passengersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Passport</th>
+                    <th>Tickets</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in passengers %}
+                <tr>
+                    <td>{{ p.passenger_id }}</td>
+                    <td><strong>{{ p.full_name }}</strong></td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.phone or '—' }}</td>
+                    <td>{{ p.passport_number or '—' }}</td>
+                    <td>
+                        <span class="count-badge">{{ p.tickets|length }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-muted">No passengers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
