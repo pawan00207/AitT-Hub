@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Search Flights{% endblock %}
+{% block page_title %}Search & Book Flights{% endblock %}
+{% block content %}
+
+<div class="section-card">
+    <div class="panel-header">
+        <h3>Search Flights</h3>
+    </div>
+    <form method="POST" class="search-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Origin Airport</label>
+                <select name="origin" class="form-control">
+                    <option value="">Any Origin</option>
+                    {% for ap in airports %}
+                    <option value="{{ ap.airport_id }}">{{ ap.airport_code }} — {{ ap.city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Destination Airport</label>
+                <select name="dest" class="form-control">
+                    <option value="">Any Destination</option>
+                    {% for ap in airports %}
+                    <option value="{{ ap.airport_id }}">{{ ap.airport_code }} — {{ ap.city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date (optional)</label>
+                <input type="date" name="date" class="form-control">
+            </div>
+            <div class="form-group form-submit-group">
+                <button type="submit" class="btn btn-primary">Search Flights</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if results is not none %}
+<div class="section-card">
+    <div class="panel-header">
+        <h3>Search Results <span class="count-badge">{{ results|length }}</span></h3>
+    </div>
+    {% if results %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Flight #</th>
+                    <th>Airline</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Departure</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in results %}
+                <tr>
+                    <td><strong>{{ f.flight_number }}</strong></td>
+                    <td>{{ f.airline.airline_name if f.airline else '—' }}</td>
+                    <td>{{ f.origin.airport_code if f.origin else '—' }} — {{ f.origin.city if f.origin else '' }}</td>
+                    <td>{{ f.destination.airport_code if f.destination else '—' }} — {{ f.destination.city if f.destination else '' }}</td>
+                    <td>{{ f.scheduled_departure }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if f.status == 'On Time' else ('warning' if f.status == 'Delayed' else 'danger') }}">
+                            {{ f.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if f.status != 'Cancelled' %}
+                        <a href="{{ url_for('book_ticket', flight_id=f.flight_id) }}" class="btn btn-sm btn-primary">Book Now</a>
+                        {% else %}
+                        <span class="text-muted">Unavailable</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">✈</div>
+        <p>No flights found for your search criteria.</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
