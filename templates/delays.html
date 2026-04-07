@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Delay Records{% endblock %}
+{% block page_title %}Delay Records{% endblock %}
+{% block content %}
+
+<div class="section-card">
+    <div class="panel-header">
+        <h3>All Delay Records <span class="count-badge">{{ delays|length }}</span></h3>
+    </div>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Flight</th>
+                    <th>Delay (min)</th>
+                    <th>Reason</th>
+                    <th>Weather</th>
+                    <th>Carrier</th>
+                    <th>NAS</th>
+                    <th>Security</th>
+                    <th>Late Aircraft</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in delays %}
+                <tr>
+                    <td>{{ d.delay_id }}</td>
+                    <td><strong>{{ d.flight.flight_number if d.flight else '—' }}</strong></td>
+                    <td>
+                        <span class="delay-badge {% if d.delay_minutes > 60 %}delay-severe{% elif d.delay_minutes > 30 %}delay-moderate{% else %}delay-minor{% endif %}">
+                            {{ d.delay_minutes }} min
+                        </span>
+                    </td>
+                    <td>{{ d.delay_reason }}</td>
+                    <td>{{ d.weather_delay }}</td>
+                    <td>{{ d.carrier_delay }}</td>
+                    <td>{{ d.nas_delay }}</td>
+                    <td>{{ d.security_delay }}</td>
+                    <td>{{ d.late_aircraft_delay }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-muted">No delay records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
