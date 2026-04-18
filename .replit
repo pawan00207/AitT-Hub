@@ -1,0 +1,8 @@
+run = "python app.py"
+entrypoint = "app.py"
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+run = ["python", "app.py"]

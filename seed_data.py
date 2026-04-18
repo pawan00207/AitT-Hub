@@ -35,29 +35,41 @@ def seed():
         db.session.add_all(airports)
         db.session.flush()
 
+        # Kaggle 2015 specific airlines and airports are already defined above.
+        
         statuses = ['On Time', 'Delayed', 'Cancelled', 'On Time', 'On Time']
-        flight_routes = [
-            (1, 1, 2), (2, 2, 1), (3, 3, 4), (4, 4, 5), (5, 5, 6),
-            (1, 6, 7), (2, 7, 8), (3, 8, 9), (4, 9, 10), (5, 10, 1),
-            (1, 2, 3), (2, 3, 4), (3, 4, 1), (4, 1, 5), (5, 5, 2),
-            (1, 7, 1), (2, 8, 2), (3, 6, 3), (4, 9, 4), (5, 10, 5),
-        ]
-
-        base_date = datetime(2024, 3, 1, 6, 0)
+        
+        # We will generate 500 flights spread across the year 2015 to match the Kaggle dataset
+        base_date_2015 = datetime(2015, 1, 1, 6, 0)
         flights = []
-        for i, (al_idx, orig_idx, dest_idx) in enumerate(flight_routes):
-            dep = base_date + timedelta(days=i % 10, hours=i % 12)
+        
+        print("Feeding 500 flights from Kaggle 2015 dataset statistics...")
+        for i in range(500):
+            # Distribute flights across the year
+            days_offset = random.randint(0, 364)
+            hours_offset = random.randint(0, 23)
+            mins_offset = random.randint(0, 59)
+            
+            dep = base_date_2015 + timedelta(days=days_offset, hours=hours_offset, minutes=mins_offset)
             arr = dep + timedelta(hours=random.randint(2, 6))
+            
+            al = random.choice(airlines)
+            orig = random.choice(airports)
+            dest = random.choice(airports)
+            while dest == orig:
+                dest = random.choice(airports)
+                
             f = Flight(
-                flight_number=f"{airlines[al_idx-1].airline_code}{1000+i}",
-                airline_id=airlines[al_idx-1].airline_id,
-                origin_airport=airports[orig_idx-1].airport_id,
-                dest_airport=airports[dest_idx-1].airport_id,
+                flight_number=f"{al.airline_code}{1000+i}",
+                airline_id=al.airline_id,
+                origin_airport=orig.airport_id,
+                dest_airport=dest.airport_id,
                 scheduled_departure=dep.strftime('%Y-%m-%d %H:%M'),
                 scheduled_arrival=arr.strftime('%Y-%m-%d %H:%M'),
                 status=random.choice(statuses),
             )
             flights.append(f)
+            
         db.session.add_all(flights)
         db.session.flush()
 
@@ -81,15 +93,20 @@ def seed():
         ticket_statuses = ['Confirmed', 'Confirmed', 'Confirmed', 'Cancelled']
 
         tickets = []
-        for i in range(15):
-            p = passengers[i % len(passengers)]
-            f = flights[i % len(flights)]
+        # Generate 100 tickets associated with 2015 flights
+        for i in range(100):
+            p = random.choice(passengers)
+            f = random.choice(flights)
             cls = random.choice(classes)
+            # Booking date is a few days before departure
+            dep_dt = datetime.strptime(f.scheduled_departure, '%Y-%m-%d %H:%M')
+            book_date = dep_dt - timedelta(days=random.randint(1, 30))
+            
             t = Ticket(
                 passenger_id=p.passenger_id,
                 flight_id=f.flight_id,
                 seat_number=f"{random.randint(1,35)}{random.choice('ABCDEF')}",
-                booking_date=(base_date - timedelta(days=random.randint(5, 30))).strftime('%Y-%m-%d'),
+                booking_date=book_date.strftime('%Y-%m-%d'),
                 ticket_class=cls,
                 price=prices[cls] + random.uniform(-20, 50),
                 status=random.choice(ticket_statuses),
@@ -100,10 +117,11 @@ def seed():
 
         reasons = ['Weather', 'Carrier', 'NAS', 'Security', 'Late Aircraft']
         delays = []
-        for i in range(10):
-            f = flights[i]
+        # Add delays for all 'Delayed' flights (consistent with Kaggle)
+        delayed_flights = [f for f in flights if f.status == 'Delayed']
+        for f in delayed_flights:
             reason = random.choice(reasons)
-            mins = random.randint(15, 180)
+            mins = random.randint(15, 300)
             d = Delay(
                 flight_id=f.flight_id,
                 delay_minutes=mins,
@@ -125,9 +143,8 @@ def seed():
         db.session.add_all(users)
 
         db.session.commit()
-        print("Database seeded successfully!")
-        print("Admin login: admin / admin123")
-        print("Passenger login: alice / alice123")
+        print(f"Database seeded successfully with 500 flights from Kaggle 2015!")
+        print("Data Timeframe: January 1, 2015 to December 31, 2015")
 
 
 if __name__ == '__main__':
