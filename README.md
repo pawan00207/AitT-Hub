@@ -20,7 +20,7 @@ Full-stack DBMS academic project: Python Flask + SQLite + scikit-learn ML.
 pip install -r requirements.txt
 python app.py
 ```
-App at http://localhost:5000
+App at (https://ait-t-hub-2hnh.vercel.app/login)
 
 ## Demo Credentials
 | Role | Username | Password |
