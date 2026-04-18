@@ -7,7 +7,15 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'airtrack-secret-key-2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///airtrack.db'
+
+# Use absolute path for SQLite to work correctly on Vercel
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'instance', 'airtrack.db')
+if not os.path.exists(os.path.join(basedir, 'instance')):
+    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 from models import db, Airline, Airport, Flight, Passenger, Ticket, Delay, User

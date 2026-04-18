@@ -1,8 +1,8 @@
 __pycache__/
 *.pyc
 *.pyo
-instance/
-*.db
+# instance/
+# *.db
 .pythonlibs/
 .env
-delay_model.pkl
+# delay_model.pkl
